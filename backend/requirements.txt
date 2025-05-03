@@ -1,0 +1,9 @@
+pandas
+mysql-connector-python
+python-dotenv
+langchain
+langgraph
+langchain-community
+langchain-experimental
+langchain-core
+langchain-openai

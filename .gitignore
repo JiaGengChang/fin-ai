@@ -1,0 +1,44 @@
+# Node.js
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+dist/
+.env
+
+# Python
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+*.pyc
+.Python
+env/
+venv/
+ENV/
+.venv/
+pip-log.txt
+*.egg-info/
+*.egg
+.env
+
+# MySQL dumps or credentials (if any)
+*.sql
+*.db
+
+# VSCode
+.vscode/
+
+# macOS
+.DS_Store
+
+# Logs
+logs/
+*.log
+
+# System files
+Thumbs.db
+ehthumbs.db
+
+# Jupyter (if applicable)
+.ipynb_checkpoints/
