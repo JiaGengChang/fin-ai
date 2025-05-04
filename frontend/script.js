@@ -1,21 +1,43 @@
 const sendButton = document.querySelector('.send-button');
 const chatInput = document.querySelector('.chat-input');
 const chatHistory = document.querySelector('.chat-history');
+const sendButtonIcon = sendButton.querySelector('.icon'); 
+
+let isResponding = false;
+
+function switchMode() {
+    if (isResponding) {
+        sendButtonIcon.textContent = '↑';
+        sendButton.disabled = false;
+        isResponding = false;
+    }
+    else {
+        sendButtonIcon.textContent = '◼';
+        sendButton.disabled = false;
+        isResponding = true;
+    }
+}
 
 async function sendMessage() {
     const message = chatInput.value.trim();
   
     if (message) {
+        switchMode();
         // Add user message to chat history
+        const userMessageContainer = document.createElement('div');
+        userMessageContainer.classList.add('chat-message-container');
         const userMessageElement = document.createElement('div');
         userMessageElement.classList.add('chat-message', 'user');
 
         // Replace newline characters with <br> for HTML rendering
         userMessageElement.innerHTML = message.replace(/\n/g, '<br>'); 
 
-        chatHistory.appendChild(userMessageElement);
+        userMessageContainer.appendChild(userMessageElement);
+        chatHistory.appendChild(userMessageContainer);
+
         chatHistory.scrollTop = chatHistory.scrollHeight;
         chatInput.value = '';
+        resizeInput();
     
         // Send user message to backend
         try {
@@ -36,22 +58,41 @@ async function sendMessage() {
             // Add bot's response to chat history
             const botMessageElement = document.createElement('div');
             botMessageElement.classList.add('chat-message', 'assistant');
-            botMessageElement.textContent = botResponse;
-            chatHistory.appendChild(botMessageElement);
+            botMessageElement.innerHTML = botResponse.replace(/\n/g, '<br>');
+            const botMessageContainer = document.createElement('div');
+            botMessageContainer.classList.add('chat-message-container');
+            botMessageContainer.appendChild(botMessageElement);
+            chatHistory.appendChild(botMessageContainer);
     
             chatHistory.scrollTop = chatHistory.scrollHeight;
     
         } catch (error) {
             console.error('Error:', error);
+        } finally {
+            switchMode();
         }
     }
 }
 
-sendButton.addEventListener('click', sendMessage);
+sendButton.addEventListener('click', () => {
+    if (isResponding) {
+        ;
+    }
+    else {
+        sendMessage();
+    }
+});
 
 chatInput.addEventListener('keydown', function (event) {
   if (event.key === 'Enter' && !event.shiftKey) {
     event.preventDefault();
-    sendMessage();
+    sendButton.click();
   }
 });
+
+const resizeInput = () => {
+    chatInput.style.height = 'auto';
+    chatInput.style.height = `${chatInput.scrollHeight}px`;
+};
+
+chatInput.addEventListener('input', resizeInput);
