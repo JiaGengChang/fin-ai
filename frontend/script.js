@@ -5,6 +5,9 @@ const sendButtonIcon = sendButton.querySelector('.icon');
 
 let isResponding = false;
 
+const controller = new AbortController();
+const timeoutId = setTimeout(() => controller.abort(), 30000);
+
 function switchMode() {
     if (isResponding) {
         sendButtonIcon.textContent = '↑';
@@ -20,65 +23,71 @@ function switchMode() {
 
 async function sendMessage() {
     const message = chatInput.value.trim();
-  
-    if (message) {
-        switchMode();
-        // Add user message to chat history
-        const userMessageContainer = document.createElement('div');
-        userMessageContainer.classList.add('chat-message-container');
-        const userMessageElement = document.createElement('div');
-        userMessageElement.classList.add('chat-message', 'user');
+    if (!message) return;
+    switchMode();
 
-        // Replace newline characters with <br> for HTML rendering
-        userMessageElement.innerHTML = message.replace(/\n/g, '<br>'); 
+    // Add user message to chat history
+    const userMessageContainer = document.createElement('div');
+    userMessageContainer.classList.add('chat-message-container');
+    const userMessageElement = document.createElement('div');
+    userMessageElement.classList.add('chat-message', 'user');
 
-        userMessageContainer.appendChild(userMessageElement);
-        chatHistory.appendChild(userMessageContainer);
+    // Replace newline characters with <br> for HTML rendering
+    userMessageElement.innerHTML = message.replace(/\n/g, '<br>'); 
 
-        chatHistory.scrollTop = chatHistory.scrollHeight;
-        chatInput.value = '';
-        resizeInput();
-    
-        // Send user message to backend
-        try {
-            const response = await fetch('http://localhost:3000/api/message', {
+    userMessageContainer.appendChild(userMessageElement);
+    chatHistory.appendChild(userMessageContainer);
+
+    chatHistory.scrollTop = chatHistory.scrollHeight;
+    chatInput.value = '';
+    resizeInput();
+
+    // Send user message to backend
+    try {
+        const response = await fetch('http://localhost:8000/ask', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
             },
-            body: JSON.stringify({ message }),  
-            });
-    
-            if (!response.ok) throw new Error('Failed to send message');
-    
-            // Parse JSON response from backend
-            const data = await response.json();
-            const botResponse = data.response;
-    
-            // Add bot's response to chat history
-            const botMessageElement = document.createElement('div');
-            botMessageElement.classList.add('chat-message', 'assistant');
-            botMessageElement.innerHTML = botResponse.replace(/\n/g, '<br>');
-            const botMessageContainer = document.createElement('div');
-            botMessageContainer.classList.add('chat-message-container');
-            botMessageContainer.appendChild(botMessageElement);
-            chatHistory.appendChild(botMessageContainer);
-    
-            chatHistory.scrollTop = chatHistory.scrollHeight;
-    
-        } catch (error) {
-            console.error('Error:', error);
-        } finally {
-            switchMode();
+            body: JSON.stringify({ user_input: message }),  
+        });
+        if (!response.ok) throw new Error('Failed to send message');
+        // Parse JSON response from backend
+        const data = await response.json();
+        const botResponse = data.response;
+        const graphUrl = data.graph_url;
+        // Add bot's response to chat history
+        const botMessageElement = document.createElement('div');
+        botMessageElement.classList.add('chat-message', 'assistant');
+        botMessageElement.innerHTML = botResponse.replace(/\n/g, '<br>');
+        const botMessageContainer = document.createElement('div');
+        botMessageContainer.classList.add('chat-message-container');
+        botMessageContainer.appendChild(botMessageElement);
+        chatHistory.appendChild(botMessageContainer);
+        // If a graph URL exists, display the graph image
+        if (graphUrl) {
+            const graphElement = document.createElement('img');
+            const path = "http://localhost:8000/" + graphUrl
+            graphElement.src = path;
+            graphElement.alt = "Generated Graph";
+            graphElement.classList.add('generated-graph');
+            const graphContainer = document.createElement('div');
+            graphContainer.classList.add('chat-message-container');
+            graphContainer.appendChild(graphElement);
+            chatHistory.appendChild(graphContainer);
         }
+
+        chatHistory.scrollTop = chatHistory.scrollHeight;
+
+    } catch (error) {
+        console.error('Error:', error);
+    } finally {
+        switchMode();
     }
 }
 
 sendButton.addEventListener('click', () => {
-    if (isResponding) {
-        ;
-    }
-    else {
+    if (!isResponding) {
         sendMessage();
     }
 });
