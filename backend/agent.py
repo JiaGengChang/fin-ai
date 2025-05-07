@@ -6,9 +6,10 @@ from langchain_experimental.utilities import PythonREPL
 from langchain_core.tools import Tool, StructuredTool
 from langgraph.checkpoint.memory import MemorySaver
 from langgraph.prebuilt import create_react_agent
-from langchain_core.messages import HumanMessage, AIMessage
+from langchain_core.messages import HumanMessage, SystemMessage, AIMessage
 from dotenv import load_dotenv
 import matplotlib.pyplot as plt
+from matplotlib.ticker import MaxNLocator
 import matplotlib
 from pydantic import BaseModel
 from typing import List, Optional
@@ -30,33 +31,38 @@ repl_tool = Tool(
 )
 
 class PlotInput(BaseModel):
-    x: List[float]
+    x: List[int]
     y: List[float]
-    filename: Optional[str] = "graph.png"
+    graph_folder: str
+    filename: str
     title: Optional[str] = "Line Plot"
     xlabel: Optional[str] = "X"
     ylabel: Optional[str] = "Y"
 
-def generate_line_plot(x, y, filename="graph.png", title="Line Plot", xlabel="X", ylabel="Y"):
+def generate_line_plot(x, y, graph_folder, filename, title="Line Plot", xlabel="X", ylabel="Y"):
+    dir = os.path.dirname(graph_folder)
+    if dir and not os.path.exists(dir):
+        os.makedirs(dir)
+
     plt.figure()
     plt.plot(x, y, marker="o")
     plt.title(title)
     plt.xlabel(xlabel)
     plt.ylabel(ylabel)
     plt.grid(True)
-    plt.tight_layout()
 
-    backend_dir = os.path.dirname(os.path.abspath(__file__))
-    graph_folder = os.path.join(backend_dir, 'graph')
-    os.makedirs(graph_folder, exist_ok=True)
+    ax = plt.gca()
+    ax.xaxis.set_major_locator(MaxNLocator(integer=True))
+
+    plt.tight_layout()
 
     path = os.path.join(graph_folder, filename)
     plt.savefig(path)
     plt.close()
 
 def generate_line_plot_wrapper(inputs: PlotInput) -> str:
-    generate_line_plot(inputs.x, inputs.y, inputs.filename, inputs.title, inputs.xlabel, inputs.ylabel)
-    return f"Graph generated: {inputs.filename}"
+    generate_line_plot(inputs.x, inputs.y, inputs.graph_folder, inputs.filename, inputs.title, inputs.xlabel, inputs.ylabel)
+    return f"Graph generated: {inputs.graph_folder}/{inputs.filename}"
 
 graph_plot_tool = StructuredTool.from_function(
     func=generate_line_plot_wrapper,
@@ -72,12 +78,12 @@ tools = [query_sql_tool, graph_plot_tool, repl_tool]
 
 agent_executor = create_react_agent(model, tools, checkpointer=memory)
 
-column_description = """
-The company_data table in the financial_db MySQL database contains the following columns:
+db_description = """
+The finanal_db database has one main table: `company_data`, with the following structure:
 
 ### Company Metadata and Financial Data
 1. company_id: Unique identifier for the company.
-2. ticker: The stock ticker symbol of the company, use this to identify the company.
+2. ticker: The stock ticker symbol of the company.
 3. company_name: Full name of the company.
 4. country: The country where the company is based.
 5. industry_code: Numeric code representing the company's industry classification.
@@ -104,7 +110,7 @@ The company_data table in the financial_db MySQL database contains the following
 24. net_cash_flow_investing: Net cash flow from investing activities.
 25. net_cash_flow_operating: Net cash flow from operating activities.
 26. common_shares_outstanding: Number of common shares outstanding.
-27. total_equity: The company's total equity.
+27. total_equity: total shareholder's equity.
 28. dividends_per_share: Dividends paid per share.
 29. market_value: The company's market capitalization value.
 30. price: The company's closing stock price.
@@ -127,27 +133,55 @@ The company_data table in the financial_db MySQL database contains the following
 45. price_to_book_ratio(P/B) : Market value divided by total equity.
 46. price_to_share_ratio(P/S) : Market value divided by common shares outstanding.
 47. EV_to_EBITDA_ratio(EV/EBITDA): (Market value + total liabilities - cash) divided by EBITDA.
+
+Use the `ticker` column to identify companies when a company name or stock symbol is mentioned.
 """
 
-system_instruction = """
-You are a financial data analyst assistant.
+system_message = SystemMessage(content="""
+You are a financial analysis agent designed to interact with a SQL database containing company financial data.
 
-Your primary task is to analyze user questions using SQL queries and, where appropriate, Python code.
+If the question is related to the financial data of companies (for example, asking about revenue, earnings, or financial ratios), you will query the 'company_data' table in the database.
+If the question is general in nature (such as asking for the capital of a country or historical events), you will provide an answer using your internal knowledge base, drawing from common knowledge and general sources.
 
-If the question involves trends, time-based comparisons, or visual insights (e.g., revenue over multiple years), generate and save graph using graph_plot_tool.
+{db_description}
 
-In your response, always:
-1. Describe the analysis result clearly in plain English.
-2. If a graph was generated, include the line: "Graph generated: graph/filename.png"
-3. Return only the final response text — do not include any raw code, logs, or intermediate Python output.
-"""
+Given an input question, create a syntactically correct {dialect} query to run,
+then look at the results of the query and return the answer. Unless the user
+specifies a specific number of examples they wish to obtain, always limit your
+query to at most {top_k} results.
+
+You can order the results by a relevant column to return the most interesting
+examples in the database. Never query for all the columns from a specific table,
+only ask for the relevant columns given the question.
+
+You MUST double check your query before executing it. If you get an error while
+executing a query, rewrite the query and try again.
+
+DO NOT make any DML statements (INSERT, UPDATE, DELETE, DROP etc.) to the
+database.
+
+To start you should ALWAYS look at the tables in the database to see what you
+can query. Do NOT skip this step.
+
+Then you should query the schema of the most relevant tables.
+
+If the query results include time series data or numerical values suitable for visualization 
+(e.g., revenue over years), use the `graph_plot_tool` to generate a 
+relevant chart (line chart, bar chart, etc.). 
+
+If a graph is not appropriate, return only the text-based answer.
+""".format(
+    dialect="MySQL",
+    top_k=5,
+    db_description=db_description
+))
 
 def query_agent(user_input: str):
-    query = HumanMessage(content=f"{column_description}\n\n{user_input}")
+    user_message = HumanMessage(content=user_input)
     config = {"configurable": {"thread_id": "thread-001"}}
     full_response = ""
 
-    for step in agent_executor.stream({"messages": [query]}, config, stream_mode="values"):
+    for step in agent_executor.stream({"messages": [system_message, user_message]}, config, stream_mode="values"):
         if step["messages"]:
             step["messages"][-1].pretty_print()
         if step["messages"] and isinstance(step["messages"][-1], AIMessage):

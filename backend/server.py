@@ -31,18 +31,12 @@ class Query(BaseModel):
 @app.post("/ask")
 async def ask(query: Query):
 
- 
-  
     user_input = query.user_input
     filename = f"graph_{uuid.uuid4().hex[:8]}.png"
-    full_prompt = f"{user_input}\nSave the graph as '{filename}' if applicable."
+    full_prompt = f"{user_input}\nSave the graph as '{filename}' at {graph_folder} if applicable."
 
     response = query_agent(full_prompt)
 
-    return {
-        "response": "hi",
-        "graph_url": "graph/graph_c9fbf468.png"
-    }
     graph_path = os.path.join(graph_folder, filename)
     graph_url = None
     
