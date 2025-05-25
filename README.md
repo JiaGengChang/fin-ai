@@ -10,7 +10,7 @@ A lightweight chat interface powered by an AI backend for answering finance-rela
 - Renders both text and graph responses
 - Automatic response handling, loading indication (↑ / ◼)
 
-## 🚀 Getting Started
+## 📦 Getting Started
 
 ### 1. Clone the Repository
 
