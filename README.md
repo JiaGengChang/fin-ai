@@ -34,7 +34,7 @@ uvicorn main:app --reload
 
 Ensure it runs on http://localhost:8000
 
-### 3. Launch frontend
+### 4. Launch frontend
 
 ```bash
 # On macOS
