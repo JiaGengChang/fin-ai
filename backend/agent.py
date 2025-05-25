@@ -21,8 +21,12 @@ model = init_chat_model("gpt-4o-mini", model_provider="openai", max_tokens=2000,
 memory = MemorySaver()
 matplotlib.use('Agg')
 
-db = SQLDatabase.from_uri(os.getenv("DB_URI"))
-query_sql_tool = QuerySQLDatabaseTool(db=db)
+try:
+    db = SQLDatabase.from_uri(os.getenv("DB_URI"))
+    query_sql_tool = QuerySQLDatabaseTool(db=db)
+except Exception as e:
+    print(f'Could not connect to MySQL DB. Check DB_URI or make sure server is running. Error: {e}')
+    exit(1)
 
 repl_tool = Tool(
     name="python_repl",
