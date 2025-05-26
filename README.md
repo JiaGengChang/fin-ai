@@ -62,5 +62,7 @@ You can now start chatting with the AI!
 
 - Ask about Apple's revenue
 - ![apple_revenue](https://github.com/user-attachments/assets/8a8db44b-9cde-41d0-82b2-254a333175d3)
+- Compare an indicator across companies in a specific year
+- ![tech_company_dividends](https://github.com/user-attachments/assets/4f95cc69-9fed-4ddd-af1f-d82c0f64458b)
 
 
