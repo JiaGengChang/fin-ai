@@ -4,6 +4,10 @@ A lightweight chat interface powered by an AI backend for answering finance-rela
 
 Automatically displays AI-generated responses and renders graphs when provided.
 
+## 🎬 Demo
+
+https://github.com/JiaGengChang/fin-ai/raw/refs/heads/main/assets/demo.mov
+
 ## 📦 Getting Started
 
 ### 1. Clone the Repository
@@ -58,5 +62,5 @@ You can now start chatting with the AI!
 
 - Ask about Apple's revenue 
 
-    ![Stock price example screenshot](backend/graph/graph_6ea1a7e4.png)
+    ![Stock price example screenshot](assets/apple_revenue.png)
 
