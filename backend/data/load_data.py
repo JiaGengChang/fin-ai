@@ -1,9 +1,11 @@
 import os
 from dotenv import load_dotenv
-load_dotenv()
+assert load_dotenv('.env')
 import time
+import numpy as np
 import pandas as pd
 import mysql.connector
+from tqdm import tqdm
 from metadata import column_mapping, derived_columns
 
 # script to create and populate MySQL database of company financial data
@@ -46,8 +48,10 @@ CREATE TABLE IF NOT EXISTS company_data (
 cursor.execute(create_table_query)
 
 # Insert company and base financial data
-for _, row in df.iterrows():
-    values = [row[col] if pd.notna(row[col]) else None for col in columns]
+for row in tqdm(range(len(df))):
+    values = [df.iloc[row][col] if pd.notna(df.iloc[row][col]) else None for col in columns]
+    # convert numpy numeric types to native Python types
+    values = [value.item() if isinstance(value, (np.int64, np.float64)) else value for value in values]
 
     insert_query = f'''
         INSERT INTO company_data ({', '.join(columns)})
