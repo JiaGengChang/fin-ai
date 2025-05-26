@@ -13,7 +13,7 @@ https://github.com/user-attachments/assets/b9f0d9b5-0ff5-4b82-8a4e-7ec30c7d74bb
 ### 1. Clone the Repository
 
 ```bash
-git clone https://github.com/your-username/finance-ai.git
+git clone https://github.com/jiakai2002/fin-ai.git
 ```
 
 ### 2. Install requirements
@@ -33,32 +33,23 @@ Modify the .env file as follows:
 
 *  DB_URI: format is `mysql+mysqlconnector://<user>:<password>@<address>:<port>/<db-name>`
 
-Populate the database: 
+Start the MySQL server, then populate the database with: 
 ```bash
-python backend/data/load_data.py
+cd src
+python data/load_data.py
 ```
 
 ### 4. Start backend server
 
-(Start the MySQL server if you haven't done so already)
 
 ```bash
 uvicorn server:app --reload
 ```
 
-Ensure it runs on http://localhost:8000
-
 ### 5. Launch frontend
 
-```bash
-# On macOS
-open frontend/index.html
-
-# On Windows
-start frontend/index.html
-```
-
-You can now start chatting with the AI!
+Navigate to http://localhost:8000
+You can now start chatting with Finance AI!
 
 ## 🖼️ Examples
 
