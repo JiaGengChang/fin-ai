@@ -74,7 +74,7 @@ def generate_bar_plot(x, y, graph_folder, filename, title="Bar Plot", xlabel="X"
     plt.title(title)
     plt.xlabel(xlabel)
     plt.ylabel(ylabel)
-    plt.xticks()
+    plt.xticks(rotation=15)
     plt.grid(axis='y')
 
     ax = plt.gca()
