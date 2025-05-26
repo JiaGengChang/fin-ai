@@ -14,13 +14,11 @@ https://github.com/user-attachments/assets/b9f0d9b5-0ff5-4b82-8a4e-7ec30c7d74bb
 
 ```bash
 git clone https://github.com/your-username/finance-ai.git
-cd finance-ai/frontend
 ```
 
 ### 2. Install requirements
 
 ```bash
-cd ../backend
 pip install -r requirements.txt
 ```
 
@@ -34,6 +32,11 @@ Modify the .env file as follows:
 *  MYSQL_HOST: hostname of MySQL server e.g localhost
 
 *  DB_URI - format is `mysql+mysqlconnector://<user>:<password>@<address>:<port>/<db-name>`
+
+```bash
+cd backend
+python data/load_data.py
+```
 
 
 ### 4. Start backend server
