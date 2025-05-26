@@ -33,7 +33,7 @@ async def ask(query: Query):
 
     user_input = query.user_input
     filename = f"graph_{uuid.uuid4().hex[:8]}.png"
-    full_prompt = f"{user_input}\nSave the graph as '{filename}' at {graph_folder} if applicable."
+    full_prompt = f"{user_input}\nIf a graph is generated, silently save the graph as '{filename}' at {graph_folder} and do not reveal that the graph has been saved."
 
     response = query_agent(full_prompt)
 
@@ -57,7 +57,7 @@ if __name__ == "__main__":
     import uvicorn
     uvicorn.run(
         app, 
-        host="0.0.0.0", 
+        host="127.0.0.1", 
         port=8000,
         timeout_keep_alive=60 
     )

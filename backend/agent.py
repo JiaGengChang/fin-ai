@@ -17,12 +17,16 @@ from typing import List, Optional
 # Load environment variables
 load_dotenv()
 openai_api_key = os.getenv("OPENAI_API_KEY")
-model = init_chat_model("gpt-4o-mini", model_provider="openai", max_tokens=2000, temperature=0.3)
+model = init_chat_model(os.getenv("OPENAI_MODEL_NAME"), model_provider="openai", max_tokens=2000, temperature=0.3)
 memory = MemorySaver()
 matplotlib.use('Agg')
 
-db = SQLDatabase.from_uri(os.getenv("DB_URI"))
-query_sql_tool = QuerySQLDatabaseTool(db=db)
+try:
+    db = SQLDatabase.from_uri(os.getenv("DB_URI"))
+    query_sql_tool = QuerySQLDatabaseTool(db=db)
+except Exception as e:
+    print(f'Could not connect to MySQL DB. Check DB_URI or make sure server is running. Error: {e}')
+    exit(1)
 
 repl_tool = Tool(
     name="python_repl",
@@ -31,11 +35,11 @@ repl_tool = Tool(
 )
 
 class PlotInput(BaseModel):
-    x: List[int]
+    x: List[int|str]
     y: List[float]
     graph_folder: str
     filename: str
-    title: Optional[str] = "Line Plot"
+    title: Optional[str] = "Plot"
     xlabel: Optional[str] = "X"
     ylabel: Optional[str] = "Y"
 
@@ -60,11 +64,37 @@ def generate_line_plot(x, y, graph_folder, filename, title="Line Plot", xlabel="
     plt.savefig(path)
     plt.close()
 
+def generate_bar_plot(x, y, graph_folder, filename, title="Bar Plot", xlabel="X", ylabel="Y"):
+    dir = os.path.dirname(graph_folder)
+    if dir and not os.path.exists(dir):
+        os.makedirs(dir)
+
+    plt.figure()
+    plt.bar(x, y)
+    plt.title(title)
+    plt.xlabel(xlabel)
+    plt.ylabel(ylabel)
+    plt.xticks(rotation=15)
+    plt.grid(axis='y')
+
+    ax = plt.gca()
+    ax.xaxis.set_major_locator(MaxNLocator(integer=True))
+
+    plt.tight_layout()
+
+    path = os.path.join(graph_folder, filename)
+    plt.savefig(path)
+    plt.close()
+
 def generate_line_plot_wrapper(inputs: PlotInput) -> str:
     generate_line_plot(inputs.x, inputs.y, inputs.graph_folder, inputs.filename, inputs.title, inputs.xlabel, inputs.ylabel)
     return f"Graph generated: {inputs.graph_folder}/{inputs.filename}"
 
-graph_plot_tool = StructuredTool.from_function(
+def generate_bar_plot_wrapper(inputs: PlotInput) -> str:
+    generate_bar_plot(inputs.x, inputs.y, inputs.graph_folder, inputs.filename, inputs.title, inputs.xlabel, inputs.ylabel)
+    return f"Graph generated: {inputs.graph_folder}/{inputs.filename}"
+
+graph_line_plot_tool = StructuredTool.from_function(
     func=generate_line_plot_wrapper,
     input_schema=PlotInput,
     description=(
@@ -74,7 +104,17 @@ graph_plot_tool = StructuredTool.from_function(
     )
 )
 
-tools = [query_sql_tool, graph_plot_tool, repl_tool]
+graph_bar_plot_tool = StructuredTool.from_function(
+    func=generate_bar_plot_wrapper,
+    input_schema=PlotInput,
+    description=(
+        "Use this tool to generate bar plots. Required keys: "
+        "'x' (list of x values), 'y' (list of y values). Optional: "
+        "'filename', 'title', 'xlabel', 'ylabel'."
+    )
+)
+
+tools = [query_sql_tool, graph_line_plot_tool, graph_bar_plot_tool, repl_tool]
 
 agent_executor = create_react_agent(model, tools, checkpointer=memory)
 
@@ -139,6 +179,7 @@ Use the `ticker` column to identify companies when a company name or stock symbo
 
 system_message = SystemMessage(content="""
 You are a financial analysis agent designed to interact with a SQL database containing company financial data.
+You will answer questions with as few words as possible, providing concise information and no-nonsense communication.
 
 If the question is related to the financial data of companies (for example, asking about revenue, earnings, or financial ratios), you will query the 'company_data' table in the database.
 If the question is general in nature (such as asking for the capital of a country or historical events), you will provide an answer using your internal knowledge base, drawing from common knowledge and general sources.
@@ -151,8 +192,10 @@ specifies a specific number of examples they wish to obtain, always limit your
 query to at most {top_k} results.
 
 You can order the results by a relevant column to return the most interesting
-examples in the database. Never query for all the columns from a specific table,
-only ask for the relevant columns given the question.
+examples in the database.
+Only ask for the relevant columns given the question, never query for all the columns from a specific table.
+If the user repeatedly asks for ALL information in the database, you can suggest the list of available columns.
+Do not allow the user to query for all columns in the database, as this is not useful and will result in a large amount of data.
 
 You MUST double check your query before executing it. If you get an error while
 executing a query, rewrite the query and try again.
@@ -168,8 +211,16 @@ Then you should query the schema of the most relevant tables.
 If the query results include time series data or numerical values suitable for visualization 
 (e.g., revenue over years), use the `graph_plot_tool` to generate a 
 relevant chart (line chart, bar chart, etc.). 
+If the time series data has more than 3 data points, do not return the values in text format, but instead use the graph only.
+                               
+If the question is about different companies in a specific year, use a bar chart to compare them.
+If the question is about a trend over time, use a line chart. Unless requested otherwise, the time should be increasing from left to right on the x-axis.
 
-If a graph is not appropriate, return only the text-based answer.
+Do not provide any information on the filename or path of the graph. Do not mention that a graph has been saved.
+
+If a graph is not appropriate, return only the text-based answer. 
+An example where a graph is not appropriate is when the question is about a single company's financial data in a specific year
+such as "What was the financial performance of Apple in 2020?"
 """.format(
     dialect="MySQL",
     top_k=5,

@@ -1,10 +1,5 @@
-# Node.js
-node_modules/
-npm-debug.log*
-yarn-debug.log*
-yarn-error.log*
-dist/
-.env
+# Assets
+backend/graph/
 
 # Python
 __pycache__/
