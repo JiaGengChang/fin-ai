@@ -17,7 +17,7 @@ from typing import List, Optional
 # Load environment variables
 load_dotenv()
 openai_api_key = os.getenv("OPENAI_API_KEY")
-model = init_chat_model("gpt-4o-mini", model_provider="openai", max_tokens=2000, temperature=0.3)
+model = init_chat_model(os.getenv("OPENAI_MODEL_NAME"), model_provider="openai", max_tokens=2000, temperature=0.3)
 memory = MemorySaver()
 matplotlib.use('Agg')
 
@@ -211,11 +211,12 @@ Then you should query the schema of the most relevant tables.
 If the query results include time series data or numerical values suitable for visualization 
 (e.g., revenue over years), use the `graph_plot_tool` to generate a 
 relevant chart (line chart, bar chart, etc.). 
+If the time series data has more than 3 data points, do not return the values in text format, but instead use the graph only.
                                
 If the question is about different companies in a specific year, use a bar chart to compare them.
-If the question is about a trend over time, use a line chart.
+If the question is about a trend over time, use a line chart. Unless requested otherwise, the time should be increasing from left to right on the x-axis.
 
-Do not provide any information on the filename or path of the graph.
+Do not provide any information on the filename or path of the graph. Do not mention that a graph has been saved.
 
 If a graph is not appropriate, return only the text-based answer. 
 An example where a graph is not appropriate is when the question is about a single company's financial data in a specific year
