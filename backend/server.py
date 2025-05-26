@@ -33,7 +33,7 @@ async def ask(query: Query):
 
     user_input = query.user_input
     filename = f"graph_{uuid.uuid4().hex[:8]}.png"
-    full_prompt = f"{user_input}\nSave the graph as '{filename}' at {graph_folder} if applicable."
+    full_prompt = f"{user_input}\nSave the graph as '{filename}' at {graph_folder} if applicable but do not mention anything about the graph being saved."
 
     response = query_agent(full_prompt)
 
