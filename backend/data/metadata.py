@@ -37,9 +37,21 @@ column_mapping = {
 
 # Derived financial columns we will calculate
 derived_columns = [
-    'revenue_growth', 'eps_growth', 'dividend_growth', 'net_profit_margin',
-    'operating_margin', 'gross_margin', 'return_on_assets', 'return_on_equity',
-    'return_on_invested_capital', 'free_cash_flow', 'free_cash_flow_margin',
-    'debt_to_equity', 'debt_to_assets', 'price_to_earnings_ratio',
-    'price_to_book_ratio', 'price_to_share_ratio', 'EV_to_EBITDA_ratio'
+    'revenue_growth', 
+    'eps_growth', 
+    'dividend_growth', 
+    'net_profit_margin',
+    'operating_margin', 
+    'gross_margin', 
+    'return_on_assets',
+     'return_on_equity',
+    'return_on_invested_capital', 
+    'free_cash_flow', 
+    'free_cash_flow_margin',
+    'debt_to_equity', 
+    'debt_to_assets', 
+    'price_to_earnings_ratio',
+    'price_to_book_ratio', 
+    'price_to_share_ratio', 
+    'EV_to_EBITDA_ratio'
 ]
