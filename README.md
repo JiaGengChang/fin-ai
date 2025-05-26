@@ -6,7 +6,7 @@ Automatically displays AI-generated responses and renders graphs when provided.
 
 ## 🎬 Demo
 
-https://raw.githubusercontent.com/JiaGengChang/fin-ai/main/assets/demo.mov
+https://github.com/user-attachments/assets/b9f0d9b5-0ff5-4b82-8a4e-7ec30c7d74bb
 
 ## 📦 Getting Started
 
@@ -60,7 +60,7 @@ You can now start chatting with the AI!
 
 ## 🖼️ Examples
 
-- Ask about Apple's revenue 
+- Ask about Apple's revenue
+- ![apple_revenue](https://github.com/user-attachments/assets/8a8db44b-9cde-41d0-82b2-254a333175d3)
 
-    ![Stock price example screenshot](assets/apple_revenue.png)
 
