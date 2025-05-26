@@ -6,7 +6,7 @@ Automatically displays AI-generated responses and renders graphs when provided.
 
 ## 🎬 Demo
 
-https://github.com/JiaGengChang/fin-ai/raw/refs/heads/main/assets/demo.mov
+https://raw.githubusercontent.com/JiaGengChang/fin-ai/main/assets/demo.mov
 
 ## 📦 Getting Started
 
