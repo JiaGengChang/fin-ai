@@ -31,13 +31,12 @@ Modify the .env file as follows:
 
 *  MYSQL_HOST: hostname of MySQL server e.g localhost
 
-*  DB_URI - format is `mysql+mysqlconnector://<user>:<password>@<address>:<port>/<db-name>`
+*  DB_URI: format is `mysql+mysqlconnector://<user>:<password>@<address>:<port>/<db-name>`
 
+Populate the database: 
 ```bash
-cd backend
-python data/load_data.py
+python backend/data/load_data.py
 ```
-
 
 ### 4. Start backend server
 
