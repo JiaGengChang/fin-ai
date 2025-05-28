@@ -19,19 +19,25 @@ git clone https://github.com/jiakai2002/fin-ai.git
 ### 2. Install requirements
 
 ```bash
+python -m venv .venv
+source .venv/bin/activate
 pip install -r requirements.txt
 ```
 
 ### 3. Database and keys
 Modify the .env file as follows:
 
-*  OPENAI_API_KEY: your own API key from OpenAI.
+*  OPENAI_API_KEY: your own API key from OpenAI. **Mandatory**.
 
-*  MYSQL_[USER|PASSWORD]: of the MySQL server user e.g. root
+*  OPENAI_MODEL_NAME: *gpt-4o-mini* or better is recommended. Default: `gpt-4o-mini`
 
-*  MYSQL_HOST: hostname of MySQL server e.g localhost
+*  MYSQL_USER: of the MySQL server user. Default: `root`
 
-*  DB_URI: format is `mysql+mysqlconnector://<user>:<password>@<address>:<port>/<db-name>`
+*  MYSQL_PASSWORD: of the MySQL server user. Default: `password`
+
+*  MYSQL_HOST: hostname of MySQL server. Default: `localhost`
+
+*  MYSQL_PORT: port on which mySQL is running. Default: `3306`.
 
 Start the MySQL server, then populate the database with: 
 ```bash
