@@ -42,7 +42,7 @@ Create a `.env` file in the top-level directory. You may use `.env.example` as a
 Start the MySQL server, then populate the database with: 
 ```bash
 cd src
-python data/load_data.py
+python data/init_db.py
 ```
 
 ### 4. Start backend server
