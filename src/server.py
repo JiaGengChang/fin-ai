@@ -8,7 +8,7 @@ from dotenv import load_dotenv
 from agent import query_agent 
 from fastapi.middleware.cors import CORSMiddleware
 
-load_dotenv()
+assert load_dotenv('.env') or load_dotenv('../.env')
 
 app = FastAPI()
 app.add_middleware(
@@ -35,7 +35,7 @@ async def ask(query: Query):
 
     user_input = query.user_input
     filename = f"graph_{uuid.uuid4().hex[:8]}.png"
-    full_prompt = f"{user_input}\nIf a graph is generated, silently save the graph as '{filename}' at {graph_folder} and do not reveal that the graph has been saved."
+    full_prompt = f"If a graph is generated, save the graph as '{filename}' in the folder '{graph_folder}' and do not mention anything about the graph being saved or generated.\n{user_input}"
 
     response = query_agent(full_prompt)
 
