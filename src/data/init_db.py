@@ -8,7 +8,7 @@ from metadata import column_mapping
 
 # script to create and populate MySQL database of company financial data
 # that will be queried by the LangChain agent
-# db description resides in backend/data/agent.py
+# db description resides in src/agent.py
 
 start_time = time.time()
 
@@ -47,9 +47,6 @@ for _,row in df.iterrows():
     counter += 1
     print(f'{counter} of {len(df)}')
     values = [row[col] if pd.notna(row[col]) else None for col in columns]
-    # values = [df.iloc[row][col] if pd.notna(df.iloc[row][col]) else None for col in columns]
-    # convert numpy numeric types to native Python types
-    # values = [value.item() if isinstance(value, (np.int64, np.float64)) else value for value in values]
 
     insert_query = f'''
         INSERT INTO company_data ({', '.join(columns)})
@@ -63,7 +60,6 @@ conn.commit()
 print(f'{len(df)} rows inserted successfully')
 
 # Create derived financial columns
-# Procedure to create derived financial data
 with open(os.path.join(os.path.dirname(__file__), 'calculate_financial_data.sql'), 'r') as f:
     create_procedure_query = f.read()
 cursor.execute('DROP PROCEDURE IF EXISTS calculate_financial_data')
