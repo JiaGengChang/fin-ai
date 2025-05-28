@@ -30,7 +30,7 @@ app.mount("/static", StaticFiles(directory=static_dir), name="static")
 class Query(BaseModel):
     user_input: str
 
-@app.post("/ask")
+@app.post("/api/ask")
 async def ask(query: Query):
 
     user_input = query.user_input

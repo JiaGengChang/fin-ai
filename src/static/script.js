@@ -44,10 +44,10 @@ async function sendMessage() {
 
     // Send user message to backend
     try {
-        const response = await fetch('http://localhost:8000/ask', {
+        const response = await fetch('/api/ask', {
             method: 'POST',
             headers: {
-                'Content-Type': 'application/json',
+            'Content-Type': 'application/json',
             },
             body: JSON.stringify({ user_input: message }),  
         });
@@ -67,8 +67,7 @@ async function sendMessage() {
         // If a graph URL exists, display the graph image
         if (graphUrl) {
             const graphElement = document.createElement('img');
-            const path = "http://localhost:8000/" + graphUrl
-            graphElement.src = path;
+            graphElement.src = graphUrl;
             graphElement.alt = "Generated Graph";
             graphElement.classList.add('generated-graph');
             const graphContainer = document.createElement('div');
