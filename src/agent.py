@@ -17,7 +17,7 @@ from typing import List, Optional
 # Load environment variables
 assert load_dotenv('.env') or load_dotenv('../.env')
 openai_api_key = os.getenv("OPENAI_API_KEY")
-model = init_chat_model(os.getenv("OPENAI_MODEL_NAME"), model_provider="openai", max_tokens=2000, temperature=0.3)
+model = init_chat_model(os.getenv("OPENAI_MODEL_NAME","gpt-4o-mini"), model_provider="openai", max_tokens=2000, temperature=0.3)
 memory = MemorySaver()
 matplotlib.use('Agg')
 
