@@ -25,7 +25,7 @@ pip install -r requirements.txt
 ```
 
 ### 3. Database and keys
-Modify the .env file as follows:
+Create a `.env` file in the top-level directory. You may use `.env.example` as a template.
 
 *  OPENAI_API_KEY: your own API key from OpenAI. **Mandatory**.
 
