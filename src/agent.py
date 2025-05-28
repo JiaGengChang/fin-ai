@@ -117,6 +117,23 @@ def generate_bar_plot(x, y, graph_folder, filename, title="Bar Plot", xlabel="X"
     plt.savefig(path)
     plt.close()
 
+def generate_pie_chart(x, y, graph_folder, filename, title="Pie Chart"):
+    dir = os.path.dirname(graph_folder)
+    if dir and not os.path.exists(dir):
+        os.makedirs(dir)
+
+    plt.figure(figsize=(8, 5))
+    
+    plt.pie(y, labels=x, autopct='%1.1f%%', startangle=140)
+    plt.title(title)
+    plt.axis('equal')  # Equal aspect ratio ensures that pie is drawn as a circle.
+
+    plt.tight_layout()
+
+    path = os.path.join(graph_folder, filename)
+    plt.savefig(path)
+    plt.close()
+
 def generate_line_plot_wrapper(inputs: PlotInput) -> str:
     generate_line_plot(inputs.x, inputs.y, inputs.graph_folder, inputs.filename, inputs.title, inputs.xlabel, inputs.ylabel)
     return f"Graph generated: {inputs.graph_folder}/{inputs.filename}"
@@ -127,6 +144,10 @@ def generate_multiline_plot_wrapper(inputs: MultiPlotInput) -> str:
 
 def generate_bar_plot_wrapper(inputs: PlotInput) -> str:
     generate_bar_plot(inputs.x, inputs.y, inputs.graph_folder, inputs.filename, inputs.title, inputs.xlabel, inputs.ylabel)
+    return f"Graph generated: {inputs.graph_folder}/{inputs.filename}"
+
+def generate_pie_chart_wrapper(inputs: PlotInput) -> str:
+    generate_pie_chart(inputs.x, inputs.y, inputs.graph_folder, inputs.filename, inputs.title)
     return f"Graph generated: {inputs.graph_folder}/{inputs.filename}"
 
 graph_line_plot_tool = StructuredTool.from_function(
@@ -159,7 +180,17 @@ graph_bar_plot_tool = StructuredTool.from_function(
     )
 )
 
-tools = [query_sql_tool, graph_line_plot_tool, graph_multiline_plot_tool, graph_bar_plot_tool, repl_tool]
+graph_pie_chart_tool = StructuredTool.from_function(
+    func=generate_pie_chart_wrapper,
+    input_schema=PlotInput,
+    description=(
+        "Use this tool to generate pie charts."
+        "Required keys: 'x' (list of labels), 'y' (list of values), 'graph_folder' (folder to save graph in)."
+        "Optional: 'filename', 'title (title of the figure)'."
+    )
+)
+
+tools = [repl_tool, query_sql_tool, graph_line_plot_tool, graph_multiline_plot_tool, graph_bar_plot_tool, graph_pie_chart_tool]
 
 agent_executor = create_react_agent(model, tools, checkpointer=memory)
 
@@ -229,7 +260,8 @@ You are a financial analysis agent living in 2025, designed to interact with a S
 You will answer questions with as few words as possible, providing concise information and no-nonsense communication.
 
 If the question is related to the financial data of companies (for example, asking about revenue, earnings, or financial ratios), 
-you will query the 'company_data' table in the database, which contains data up to the fiscal year 2024.
+you will query the 'company_data' table in the database, which contains data up to the fiscal year 2024. 
+If the year is not specified in the query, you will assume the most recent year available in the database (2024).
 If the question is general in nature (such as asking for the capital of a country or historical events), 
 you will provide an answer using your internal knowledge base, drawing from common knowledge and general sources.
 
@@ -249,18 +281,19 @@ You MUST double check your query before executing it.
 If you get an error while executing a query, rewrite the query and try again.
 DO NOT make any DML statements (INSERT, UPDATE, DELETE, DROP etc.) to the database.
 
-If the query returns no results, return a message indicating that no data was found for the query and skip the remaining instructions.
+If the query result is empty, return a message indicating that no data was found for the query. Do NOT return hypothetical examples.
 
 If the query result has fewer than 3 data points, bypass graph creation and return a text-based answer.
 
 If the query result has 3 or more data points, follow these instructions below:
 
-If the query results include array-like data (e.g., multiple years of data for a company, or multiple companies in a specific year),
+If the query results include array-like data (e.g., multiple years of data for a company, or multiple companies in a specific year or industry code),
 use the following tools available to generate a relevant chart. 
 
 1. `graph_line_plot_tool`: Use this if the question is about a trend over time for one company.
 2. `graph_multiline_plot_tool`: Use this if the question is about comparing multiple companies over time.
 3. `graph_bar_plot_tool`: Use this if the question is about different companies in a specific year.
+4. `graph_pie_chart_tool`: Use this if the question is about the breakdown of a quantity into different aspects.
 
 If the query result has 3 to 10 data points, return a text-based answer in addition to the graph. 
 If the query result has more than 10 data points, return only the graph and do NOT return the raw values in text.
