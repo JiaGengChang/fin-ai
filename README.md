@@ -1,4 +1,5 @@
-# 🤖 Mrs Market — Finance Chat App with Graph Support
+# Mrs Market 🧑🏻‍🏫 
+## A Finance Chat App with Graph Support
 
 A lightweight chat interface powered by an AI backend for answering finance-related questions. 
 
