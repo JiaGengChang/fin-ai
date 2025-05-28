@@ -300,7 +300,7 @@ If the query result has more than 10 data points, return only the graph and do N
 
 """.format(
     dialect="MySQL",
-    top_k=3,
+    top_k=5,
     db_description=db_description
 ))
 
