@@ -291,7 +291,7 @@ If the query results include array-like data (e.g., multiple years of data for a
 use the following tools available to generate a relevant chart. 
 
 1. `graph_line_plot_tool`: Use this if the question is about a trend over time for one company.
-2. `graph_multiline_plot_tool`: Use this if the question is about comparing multiple companies over time.
+2. `graph_multiline_plot_tool`: Use this if the question is about comparing multiple time series.
 3. `graph_bar_plot_tool`: Use this if the question is about different companies in a specific year.
 4. `graph_pie_chart_tool`: Use this if the question is about the breakdown of a quantity into different aspects.
 
