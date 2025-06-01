@@ -165,7 +165,7 @@ graph_multiline_plot_tool = StructuredTool.from_function(
     input_schema=MultiPlotInput,
     description=(
         "Use this tool to generate line plots for M multiple datasets. "
-        "Required keys: 'x' (list of x-values), 'y' (list of M lists of y-values), 's' (list of M labels), 'graph_folder' (folder to save graph in)."
+        "Required keys: 'x' (list of x-values), 'y' (nested list of y-values), 's' (list of M labels), 'graph_folder' (folder to save graph in)."
         "Optional: 'filename', 'title (title of the figure)', 'xlabel (name of horizontal axis)', 'ylabel (name of vertical axis)'."
     )
 )
