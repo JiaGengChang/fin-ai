@@ -5,6 +5,12 @@ A lightweight chat interface powered by an AI backend for answering finance-rela
 
 Automatically displays AI-generated responses and renders graphs when provided.
 
+US Mirror:
+https://mrs-market-852925780229.us-central1.run.app
+
+Asia mirror:
+https://mrs-market-852925780229.asia-southeast1.run.app
+
 ## 🎬 Demo
 
 https://github.com/user-attachments/assets/83acdbbd-55e8-448e-9b84-de73c4169820
