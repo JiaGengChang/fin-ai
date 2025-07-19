@@ -4,11 +4,11 @@ from fastapi import FastAPI
 from fastapi.responses import FileResponse
 from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel
-from dotenv import load_dotenv
+# from dotenv import load_dotenv
 from agent import query_agent 
 from fastapi.middleware.cors import CORSMiddleware
 
-assert load_dotenv('.env') or load_dotenv('../.env')
+# assert load_dotenv('.env') or load_dotenv('../.env')
 
 app = FastAPI()
 app.add_middleware(
