@@ -4,11 +4,9 @@ from fastapi import FastAPI
 from fastapi.responses import FileResponse
 from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel
-# from dotenv import load_dotenv
 from agent import query_agent 
 from fastapi.middleware.cors import CORSMiddleware
 
-# assert load_dotenv('.env') or load_dotenv('../.env')
 
 app = FastAPI()
 app.add_middleware(
@@ -33,9 +31,9 @@ class Query(BaseModel):
 @app.post("/api/ask")
 async def ask(query: Query):
 
-    user_input = query.user_input
-    filename = f"graph_{uuid.uuid4().hex[:8]}.png"
-    full_prompt = f"If a graph is generated, save the graph as '{filename}' in the folder '{graph_folder}' and do not mention anything about the graph being saved or generated.\n{user_input}"
+    _uuid = str(uuid.uuid4().hex[:8])
+    filename = f"graph_{_uuid}.png"
+    full_prompt = f"If a graph is generated, save the graph as '{filename}' in the folder '{graph_folder}'. If multiple graphs are generated, use 'graph_{_uuid}_1.png', 'graph_{_uuid}_2.png', etc to denote the different files. \n{query.user_input}"
 
     response = query_agent(full_prompt)
 
@@ -55,7 +53,7 @@ async def ask(query: Query):
 # Serve landing page
 @app.get("/")
 async def serve_frontend():
-    return FileResponse("templates/index.html")
+    return FileResponse("static/index.html")
 
 if __name__ == "__main__":
     import uvicorn
