@@ -28,7 +28,8 @@ conn = psycopg.connect(
     user=os.getenv('DB_USER'),
     port=5432,
     password=os.getenv('DB_PASSWORD'),
-    dbname='financial_db'
+    dbname=os.getenv('DB_NAME'),
+    options=f"-c search_path=fin_ai" # schema
 )
 cursor = conn.cursor()
 
@@ -47,7 +48,7 @@ values_list = [
 ]
 
 insert_query = f'''
-    INSERT INTO company_data ({', '.join(columns)})
+    INSERT INTO fin_ai.company_data ({', '.join(columns)})
     VALUES ({', '.join(['%s'] * len(columns))})
     ON CONFLICT (company_id, year) DO UPDATE SET
     {', '.join(f"{col} = EXCLUDED.{col}" for col in columns if col not in ['company_id', 'year'])}
