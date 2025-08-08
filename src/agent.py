@@ -7,22 +7,18 @@ from langchain_core.tools import Tool, StructuredTool
 from langgraph.checkpoint.memory import MemorySaver
 from langgraph.prebuilt import create_react_agent
 from langchain_core.messages import HumanMessage, SystemMessage, AIMessage
-# from dotenv import load_dotenv
 import matplotlib.pyplot as plt
 from matplotlib.ticker import MaxNLocator
 import matplotlib
 from pydantic import BaseModel
 from typing import List, Optional
-
-# Load environment variables
-# assert load_dotenv('.env') or load_dotenv('../.env')
-openai_api_key = os.getenv("OPENAI_API_KEY")
-model = init_chat_model(os.getenv("OPENAI_MODEL_NAME","gpt-4o-mini"), model_provider="openai", max_tokens=2000, temperature=0.3)
-memory = MemorySaver()
 matplotlib.use('Agg')
 
+model = init_chat_model(os.getenv("OPENAI_MODEL_NAME"), model_provider="openai", max_tokens=2000, temperature=0.3)
+memory = MemorySaver()
+
 try:
-    db_uri = f'postgresql+psycopg://{os.getenv("DB_USER")}:{os.getenv("DB_PASSWORD")}@{os.getenv("DB_HOST")}:5432/financial_db'
+    db_uri = f'postgresql+psycopg://{os.getenv("DB_USER")}:{os.getenv("DB_PASSWORD")}@{os.getenv("DB_HOST")}:5432/{os.getenv("DB_NAME")}'
     db = SQLDatabase.from_uri(db_uri)
     query_sql_tool = QuerySQLDatabaseTool(db=db)
 except Exception as e:
@@ -195,7 +191,7 @@ tools = [repl_tool, query_sql_tool, graph_line_plot_tool, graph_multiline_plot_t
 agent_executor = create_react_agent(model, tools, checkpointer=memory)
 
 db_description = """
-The finanal_db database has one main table: `company_data`, with the following structure:
+The finanal_db database has one main table: `fin_ai.company_data`, with the following structure:
 
 ### Company Metadata and Financial Data
 1. company_id: Unique identifier for the company.
