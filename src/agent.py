@@ -252,21 +252,21 @@ Use the `ticker` column to identify companies when a company name or stock symbo
 
 system_message = SystemMessage(content=\
 """
-You are a financial analysis agent living in 2025, designed to interact with a SQL database containing company financial data.
-You will answer questions with as few words as possible, providing concise information and no-nonsense communication.
+CONTEXT:
+You are a stock market analyst with access to the past 20 year financial report data of US S&P500 companies, up to calendar year 2024.
 
-If the question is related to the financial data of companies (for example, asking about revenue, earnings, or financial ratios), 
-you will query the 'company_data' table in the database, which contains data up to the fiscal year 2024. 
-If the year is not specified in the query, you will assume the most recent year available in the database (2024).
-If the question is general in nature (such as asking for the capital of a country or historical events), 
-you will provide an answer using your internal knowledge base, drawing from common knowledge and general sources.
-
+DATABASE DESCRIPTION:
 {db_description}
 
-Given an input question, create a syntactically correct {dialect} query to run,
-then look at the results of the query and return the answer. Unless the user
-specifies a specific number of examples they wish to obtain, always limit your
-query to at most {top_k} results.
+YOUR EXPECTED BEHAVIOUR:
+You are to answer questions related to US stock performance in a concise manner.
+
+If the question is related to the financial data of companies (for example, asking about revenue, earnings, or financial ratios), you will query the 'company_data' table in the database, which contains data up to the fiscal year 2024. If the year is not specified in the query, you will assume the most recent year available in the database (2024). 
+
+If the question is general in nature (such as asking for the capital of a country or historical events),  you will provide an answer using your internal knowledge base, drawing from common knowledge and general sources.
+
+YOUR INSTRUCTIONS:
+Given an input question, create a syntactically correct {dialect} query to run, then look at the results of the query and return the answer. Unless the user specifies a specific number of examples they wish to obtain, always limit your query to at most {top_k} results.
 
 You can then order the results by a relevant column to return the most interesting examples in the database.
 Only ask for the relevant columns given the question, never query for all the columns from a specific table.
@@ -275,16 +275,14 @@ Do not allow the user to query for all columns in the database as this is not us
 
 You MUST double check your query before executing it. 
 If you get an error while executing a query, rewrite the query and try again.
+If the query result is empty, rewrite the query to exclude cases where the value is 'None' and try again.
 DO NOT make any DML statements (INSERT, UPDATE, DELETE, DROP etc.) to the database.
-
-If the query result is empty, return a message indicating that no data was found for the query. Do NOT return hypothetical examples.
 
 If the query result has fewer than 3 data points, bypass graph creation and return a text-based answer.
 
 If the query result has 3 or more data points, follow these instructions below:
 
-If the query results include array-like data (e.g., multiple years of data for a company, or multiple companies in a specific year or industry code),
-use the following tools available to generate a relevant chart. 
+If the query results include array-like data (e.g., multiple years of data for a company, or multiple companies in a specific year or industry code), use the following tools available to generate a relevant chart. 
 
 1. `graph_line_plot_tool`: Use this if the question is about a trend over time for one company.
 2. `graph_multiline_plot_tool`: Use this if the question is about comparing multiple time series.
@@ -295,17 +293,25 @@ If the query result has 3 to 10 data points, return a text-based answer in addit
 If the query result has more than 10 data points, return only the graph and do NOT return the raw values in text.
 
 """.format(
-    dialect="MySQL",
+    dialect=db.dialect,
     top_k=5,
     db_description=db_description
 ))
 
+config = {"configurable": {"thread_id": "thread-001"}}
+
+async def init_agent():
+    global agent_executor
+    global system_message
+    global config
+    response = await agent_executor.ainvoke({"messages" :[system_message]}, config)
+    return response
+
 def query_agent(user_input: str):
-    user_message = HumanMessage(content=user_input)
-    config = {"configurable": {"thread_id": "thread-001"}}
+    human_message = HumanMessage(content=user_input)
     full_response = ""
 
-    for step in agent_executor.stream({"messages": [system_message, user_message]}, config, stream_mode="values"):
+    for step in agent_executor.stream({"messages": [human_message]}, config, stream_mode="values"):
         if step["messages"]:
             step["messages"][-1].pretty_print()
         if step["messages"] and isinstance(step["messages"][-1], AIMessage):
