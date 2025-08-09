@@ -4,7 +4,7 @@ from fastapi import FastAPI
 from fastapi.responses import FileResponse
 from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel
-from agent import query_agent 
+from agent import init_agent, query_agent 
 from fastapi.middleware.cors import CORSMiddleware
 
 
@@ -32,16 +32,21 @@ class Query(BaseModel):
 async def ask(query: Query):
 
     _uuid = str(uuid.uuid4().hex[:8])
-    filename = f"graph_{_uuid}.png"
-    full_prompt = f"If a graph is generated, save the graph as '{filename}' in the folder '{graph_folder}'. If multiple graphs are generated, use 'graph_{_uuid}_1.png', 'graph_{_uuid}_2.png', etc to denote the different files. \n{query.user_input}"
+    graph_full_path = os.path.join(graph_folder, f"/graph_{_uuid}.png")
+    full_prompt = f"""
+    DEVELOPER PROMPT:
+    If a graph is generated, save the graph as {graph_full_path}. Display the image with `<img src={graph_full_path} max-width=100% height=auto>`.  If multiple graphs are generated, add suffixes to the filenames and update the img src attribute accordingly.
+
+    USER MESSAGE:
+    {query.user_input}
+    """
 
     response = query_agent(full_prompt)
 
-    graph_path = os.path.join(graph_folder, filename)
     graph_url = None
     
-    if os.path.exists(graph_path):
-        graph_url = f"graph/{filename}"
+    if os.path.exists(graph_full_path):
+        graph_url = f"graph/{os.path.basename(graph_full_path)}"
 
     print(f"\n\nGRAPH URL : {graph_url}\n\n")
     return {
@@ -53,6 +58,7 @@ async def ask(query: Query):
 # Serve landing page
 @app.get("/")
 async def serve_frontend():
+    await init_agent()
     return FileResponse("static/index.html")
 
 if __name__ == "__main__":
