@@ -4,6 +4,8 @@ WORKDIR /app
 
 COPY src/main.py .
 COPY src/agent.py .
+COPY src/prompt.txt .
+COPY src/db_description.txt .
 COPY src/static static
 COPY requirements.txt .
 
