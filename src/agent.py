@@ -233,8 +233,7 @@ def query_agent(user_input: str):
     graph_png_filename = f"graph/graph_{uuid.uuid4().hex[:8]}.png"
     # put commands that cannot be baked into the prompt here
     preamble = SystemMessage(f"""
-                             Wrap the SQL query you executed in <div class="sql-code"> tags.
-                             If a graph is generated, save the graph as {graph_png_filename}. Display the image with `<img src={graph_png_filename} max-width=100% height=auto>`. Should there be multiple graphs, add `_2`, `_3` suffixes etc., to the filename before the .png extension.
+                             Replace `graph_png_filename` with: {graph_png_filename}
                              """)
 
     user_message = HumanMessage(content=user_input)
