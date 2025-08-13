@@ -242,3 +242,17 @@ body {
     opacity: 0;
   }
 }
+
+.init-spinner {
+  border: 16px solid #ef8686;
+  border-top: 16px solid #52d050;
+  border-radius: 50%;
+  width: 100px;
+  height: 100px;
+  animation: init-spin 2s linear infinite;
+}
+
+@keyframes init-spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}

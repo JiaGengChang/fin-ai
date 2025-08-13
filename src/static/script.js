@@ -33,8 +33,16 @@ function createBotMessage(message) {
     chatHistory.appendChild(botMessageContainer);
 }
 
+function create_spinner() {
+    const spinner = document.createElement('div');
+    spinner.classList.add('init-spinner');
+    chatHistory.appendChild(spinner);
+    window.spinner = spinner; // enable global access
+}
+
 async function initializeChat() {
     try {
+        create_spinner()
         const response = await fetch('/api/init', {
             method: 'POST',
             headers: {
@@ -43,6 +51,7 @@ async function initializeChat() {
         });
         if (!response.ok) throw new Error('Failed to initialize chat');
         const message = await response.text();
+        window.spinner.remove();
         createBotMessage(message); 
         chatHistory.scrollTop = chatHistory.scrollHeight;
     } catch (error) {
