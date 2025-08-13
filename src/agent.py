@@ -14,8 +14,8 @@ from pydantic import BaseModel
 from typing import List, Optional
 matplotlib.use('Agg')
 
-model = init_chat_model(os.getenv("OPENAI_MODEL_NAME"), model_provider="openai", max_tokens=2000, temperature=0.3)
-memory = MemorySaver()
+model = init_chat_model(os.getenv("OPENAI_MODEL_NAME"), model_provider="openai", max_tokens=2000, temperature=0.)
+memory = InMemorySaver()
 
 try:
     db_uri = f'postgresql+psycopg://{os.getenv("DB_USER")}:{os.getenv("DB_PASSWORD")}@{os.getenv("DB_HOST")}:5432/{os.getenv("DB_NAME")}'
