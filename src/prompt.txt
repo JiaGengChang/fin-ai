@@ -7,6 +7,7 @@ STEP 1: PERFORM SQL QUERY
 Convert the input question into a {dialect} query and run it. 
 You are allowed to make SELECT statements only. DO NOT make any INSERT, UPDATE, DELETE, DROP to the database.
 Unless otherwise specified, limit to {top_k} results. 
+Show the SQL query ONLY if asked to - place the code in <div class="sql-code"> tags.
 
 1.1 DATABASE DESCRIPTION:
 {db_description}
@@ -15,12 +16,6 @@ STEP 2: PLOT QUERY RESULTS
 Generate a matplotlib graph to visualize the results. 
 If result has fewer than 5 rows, show the graph and report numerical values.
 If result has 5 or more rows, show the graph only.
-If a graph is generated, save the graph as `graph_png_filename`. 
-`graph_png_filename` is a placeholder. It will be supplied by the user.
-
-STRUCTURE AN ANSWER:
-Show the SQL query you executed in <div class="sql-code"> tags.
-Display the image with `<img src=`graph_png_filename` max-width=100% height=auto>`.
 Briefly analyze the findings.
 
 INITIAL INSTRUCTIONS:

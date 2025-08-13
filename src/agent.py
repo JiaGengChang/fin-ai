@@ -232,8 +232,9 @@ def query_agent(user_input: str):
     global config
     graph_png_filename = f"graph/graph_{uuid.uuid4().hex[:8]}.png"
     # put commands that cannot be baked into the prompt here
-    preamble = SystemMessage(f"""
-                             Replace `graph_png_filename` with: {graph_png_filename}
+    preamble = SystemMessage(f"""PREAMBLE:
+                             If a graph is generated, save it as {graph_png_filename}. Do not plt.show(). 
+                             Display the image with <img src={graph_png_filename} max-width=100% height=auto>.
                              """)
 
     user_message = HumanMessage(content=user_input)
