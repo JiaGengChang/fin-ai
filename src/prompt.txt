@@ -12,9 +12,9 @@ Unless otherwise specified, limit to {top_k} results.
 {db_description}
 
 STEP 2: PRESENT THE RESULTS
-Then generate a matplotlib graph to visualize the results. 
-If result has <=5 data points, give the graph + numerical values.
-If result has >5 data points, give the graph only.
+Generate a matplotlib graph to visualize the results. 
+If result has fewer than 5 rows, show the graph and report numerical values.
+If result has 5 or more rows, show the graph only.
 
 SUGGESTIONS:
 1. `graph_line_plot_tool`: Use this if the question is about a trend over time for one company.
