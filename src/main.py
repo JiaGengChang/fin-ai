@@ -1,10 +1,9 @@
 import os
-import uuid
 from fastapi import FastAPI
-from fastapi.responses import FileResponse, PlainTextResponse
+from fastapi.responses import FileResponse, StreamingResponse, PlainTextResponse
 from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel
-from agent import init_agent, query_agent 
+from agent import send_init_prompt, query_agent 
 from fastapi.middleware.cors import CORSMiddleware
 import asyncio
 
@@ -28,31 +27,14 @@ app.mount("/static", StaticFiles(directory=static_dir), name="static")
 # "gate" to ensure model first receives init prompt
 app.state.init_prompt_done = asyncio.Event()
 
-class Query(BaseModel):
-    user_input: str
-
-@app.post("/api/ask")
-async def ask(query: Query):
-    global graph_folder
-    _uuid = str(uuid.uuid4().hex[:8])
-    graph_full_path = os.path.join(graph_folder, f"graph_{_uuid}.png")
-    full_prompt = f"""
-    DEVELOPER PROMPT:
-    If a graph is generated, save the graph as {graph_full_path}. Display the image with `<img src={graph_full_path} max-width=100% height=auto>`.  If multiple graphs are generated, add suffixes to the filenames and update the img src attribute accordingly.
-
-    USER MESSAGE:
-    {query.user_input}
-    """
-    response = query_agent(full_prompt)
-    return {"response": response}
-
 
 # Serve landing page
 @app.get("/")
 async def serve_frontend():
     response = FileResponse("static/index.html")
     # Create task to send init prompt
-    asyncio.create_task(init_agent(app))
+    if not app.state.init_prompt_done.is_set():
+        asyncio.create_task(send_init_prompt(app))
     return response
 
 # retrieve response to init prompt
@@ -60,6 +42,17 @@ async def serve_frontend():
 async def get_init_response():
     await app.state.init_prompt_done.wait()
     return PlainTextResponse(app.state.init_response)
+
+class Query(BaseModel):
+    user_input: str
+
+@app.post("/api/ask")
+async def ask(query: Query):
+    await app.state.init_prompt_done.wait()
+    def generate_response():
+        for chunk in query_agent(query.user_input):
+            yield chunk
+    return StreamingResponse(generate_response(), media_type="text/plain")
 
 if __name__ == "__main__":
     import uvicorn
