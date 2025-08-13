@@ -1,10 +1,11 @@
 import os
+from fastapi import FastAPI
 from langchain.chat_models import init_chat_model
 from langchain_community.utilities import SQLDatabase
 from langchain_community.tools import QuerySQLDatabaseTool
 from langchain_experimental.utilities import PythonREPL
 from langchain_core.tools import Tool, StructuredTool
-from langgraph.checkpoint.memory import MemorySaver
+from langgraph.checkpoint.memory import InMemorySaver
 from langgraph.prebuilt import create_react_agent
 from langchain_core.messages import HumanMessage, SystemMessage, AIMessage
 import matplotlib.pyplot as plt
@@ -204,11 +205,13 @@ system_message = SystemMessage(content=latent_system_message.format(
 
 config = {"configurable": {"thread_id": "thread-001"}}
 
-async def init_agent():
+async def init_agent(app: FastAPI):
     global agent_executor
     global system_message
     global config
     response = await agent_executor.ainvoke({"messages" :[system_message]}, config)
+    app.state.init_prompt_done.set()
+    app.state.init_response = response["messages"][-1].content
     return response
 
 def query_agent(user_input: str):
