@@ -51,13 +51,15 @@ body {
   }
   
   .chat-message.user {
-    background-color: rgb(240, 240, 240);
+    background-color: rgb(255, 240, 181);
+    border-radius: 20px 20px 1px 20px;
     margin-left: auto;
     max-width: 60%;
   }
   
   .chat-message.assistant {
-    background-color: rgb(255, 255, 255);
+    background-color: rgb(218, 238, 255);
+    border-radius: 20px 20px 20px 1px;
     max-width: 90%;
 }
   
