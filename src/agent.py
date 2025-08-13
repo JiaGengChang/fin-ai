@@ -150,6 +150,7 @@ graph_line_plot_tool = StructuredTool.from_function(
     input_schema=PlotInput,
     description=(
         "Use this tool to generate line plots. "
+        "Example use case: the question is about a trend over time for one company."
         "Required keys: 'x' (list of x values), 'y' (list of y values), 'graph_folder' (folder to save graph in)."
         "Optional: 'filename', 'title (title of the figure)', 'xlabel (name of horizontal axis)', 'ylabel (name of vertical axis)'."
     )
@@ -160,6 +161,7 @@ graph_multiline_plot_tool = StructuredTool.from_function(
     input_schema=MultiPlotInput,
     description=(
         "Use this tool to generate line plots for M multiple datasets. "
+        "Example use case: the question is about comparing multiple time series."
         "Required keys: 'x' (list of x-values), 'y' (nested list of y-values), 's' (list of M labels), 'graph_folder' (folder to save graph in)."
         "Optional: 'filename', 'title (title of the figure)', 'xlabel (name of horizontal axis)', 'ylabel (name of vertical axis)'."
     )
@@ -170,6 +172,7 @@ graph_bar_plot_tool = StructuredTool.from_function(
     input_schema=PlotInput,
     description=(
         "Use this tool to generate bar plots."
+        "Example use case: the question is about different companies in a specific year."
         "Required keys: 'x' (list of x values), 'y' (list of y values), 'graph_folder' (folder to save graph in)."
         "Optional: 'filename', 'title (title of the figure)', 'xlabel (name of horizontal axis)', 'ylabel (name of vertical axis)'."
     )
@@ -180,6 +183,7 @@ graph_pie_chart_tool = StructuredTool.from_function(
     input_schema=PlotInput,
     description=(
         "Use this tool to generate pie charts."
+        "Example use case: the question is about the breakdown of a quantity into different aspects."
         "Required keys: 'x' (list of labels), 'y' (list of values), 'graph_folder' (folder to save graph in)."
         "Optional: 'filename', 'title (title of the figure)'."
     )
