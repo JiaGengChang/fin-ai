@@ -6,10 +6,10 @@ A lightweight chat interface powered by an AI backend for answering finance-rela
 Automatically displays AI-generated responses and renders graphs when provided.
 
 US Mirror:
-https://mrs-market-852925780229.us-central1.run.app
+https://mrsmarket1.livingit.sg
 
 Asia mirror:
-https://mrs-market-852925780229.asia-southeast1.run.app
+https://mrsmarket.livingit.sg
 
 ## 🎬 Demo
 
