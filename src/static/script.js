@@ -84,32 +84,17 @@ async function sendMessage() {
             body: JSON.stringify({ user_input: message }),  
         });
         if (!response.ok) throw new Error('Failed to send message');
-        // Parse JSON response from backend
-        const data = await response.json();
-        const botResponse = data.response;
-        const graphUrl = data.graph_url;
-        // Add bot's response to chat history
-        const botMessageElement = document.createElement('div');
-        botMessageElement.classList.add('chat-message', 'assistant');
-        botMessageElement.innerHTML = botResponse.replace(/\n/g, '<br>');
-        const botMessageContainer = document.createElement('div');
-        botMessageContainer.classList.add('chat-message-container');
-        botMessageContainer.appendChild(botMessageElement);
-        chatHistory.appendChild(botMessageContainer);
-        // If a graph URL exists, display the graph image
-        if (graphUrl) {
-            const graphElement = document.createElement('img');
-            graphElement.src = graphUrl;
-            graphElement.alt = "Generated Graph";
-            graphElement.classList.add('generated-graph');
-            const graphContainer = document.createElement('div');
-            graphContainer.classList.add('chat-message-container');
-            graphContainer.appendChild(graphElement);
-            chatHistory.appendChild(graphContainer);
+        // Read the streaming response
+        const reader = response.body.getReader();
+        const decoder = new TextDecoder();
+        while (true) {
+            const { done, value } = await reader.read();
+            if (done) break;
+            const chunk = decoder.decode(value);
+            // Send chunk to chat history
+            createBotMessage(chunk);
+            chatHistory.scrollTop = chatHistory.scrollHeight;
         }
-
-        chatHistory.scrollTop = chatHistory.scrollHeight;
-
     } catch (error) {
         console.error('Error:', error);
     } finally {
