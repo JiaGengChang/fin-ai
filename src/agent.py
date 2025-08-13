@@ -1,4 +1,5 @@
 import os
+import uuid
 from fastapi import FastAPI
 from langchain.chat_models import init_chat_model
 from langchain_community.utilities import SQLDatabase
@@ -14,9 +15,6 @@ import matplotlib
 from pydantic import BaseModel
 from typing import List, Optional
 matplotlib.use('Agg')
-
-model = init_chat_model(os.getenv("OPENAI_MODEL_NAME"), model_provider="openai", max_tokens=2000, temperature=0.)
-memory = InMemorySaver()
 
 try:
     db_uri = f'postgresql+psycopg://{os.getenv("DB_USER")}:{os.getenv("DB_PASSWORD")}@{os.getenv("DB_HOST")}:5432/{os.getenv("DB_NAME")}'
@@ -187,41 +185,59 @@ graph_pie_chart_tool = StructuredTool.from_function(
     )
 )
 
-tools = [repl_tool, query_sql_tool, graph_line_plot_tool, graph_multiline_plot_tool, graph_bar_plot_tool, graph_pie_chart_tool]
+llm = init_chat_model(os.getenv("OPENAI_MODEL_NAME"), 
+                      model_provider="openai", 
+                      temperature=0.)
 
-agent_executor = create_react_agent(model, tools, checkpointer=memory)
+graph = create_react_agent(llm, 
+                           tools=[repl_tool, query_sql_tool, graph_line_plot_tool, graph_multiline_plot_tool, graph_bar_plot_tool, graph_pie_chart_tool], 
+                           checkpointer=InMemorySaver())
 
-with open('prompt.txt','r') as f:
-    latent_system_message = f.read()
+def create_system_message():
+    with open('prompt.txt','r') as f:
+        latent_system_message = f.read()
 
-with open('db_description.txt','r') as f:
-    db_description = f.read()
+    with open('db_description.txt','r') as f:
+        db_description = f.read()
+    system_message = SystemMessage(content=latent_system_message.format(
+        dialect=db.dialect,
+        top_k=5,
+        db_description=db_description
+    ))
+    print(system_message)
+    return system_message
 
-system_message = SystemMessage(content=latent_system_message.format(
-    dialect=db.dialect,
-    top_k=5,
-    db_description=db_description
-))
-
+system_message = None
 config = {"configurable": {"thread_id": "thread-001"}}
 
-async def init_agent(app: FastAPI):
-    global agent_executor
-    global system_message
+async def send_init_prompt(app:FastAPI):
+    global graph
     global config
-    response = await agent_executor.ainvoke({"messages" :[system_message]}, config)
-    app.state.init_prompt_done.set()
+    global system_message
+    system_message = create_system_message()
+    response = await graph.ainvoke({"messages" :[system_message]}, config)
+    
+    # Store the init response for injection into HTML
     app.state.init_response = response["messages"][-1].content
-    return response
+    
+    # Open the gate for queries
+    app.state.init_prompt_done.set()
 
 def query_agent(user_input: str):
-    human_message = HumanMessage(content=user_input)
-    full_response = ""
+    global graph
+    global config
+    graph_png_filename = f"graph/graph_{uuid.uuid4().hex[:8]}.png"
+    # put commands that cannot be baked into the prompt here
+    preamble = SystemMessage(f"""
+                             Wrap the SQL query you executed in <div class="sql-code"> tags.
+                             If a graph is generated, save the graph as {graph_png_filename}. Display the image with `<img src={graph_png_filename} max-width=100% height=auto>`. Should there be multiple graphs, add `_2`, `_3` suffixes etc., to the filename before the .png extension.
+                             """)
 
-    for step in agent_executor.stream({"messages": [human_message]}, config, stream_mode="values"):
+    user_message = HumanMessage(content=user_input)
+
+    for step in graph.stream({"messages": [preamble, user_message]}, config, stream_mode="values"):
         if step["messages"]:
             step["messages"][-1].pretty_print()
         if step["messages"] and isinstance(step["messages"][-1], AIMessage):
             chunk = step["messages"][-1].content
-            full_response += chunk
-    return full_response
+            yield chunk
