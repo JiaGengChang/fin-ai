@@ -6,7 +6,7 @@ from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel
 from agent import init_agent, query_agent 
 from fastapi.middleware.cors import CORSMiddleware
-
+import asyncio
 
 app = FastAPI()
 app.add_middleware(
