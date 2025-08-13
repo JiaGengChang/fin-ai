@@ -148,6 +148,15 @@ body {
   background: transparent;
 }
 
+.chat-message.assistant .sql-code {
+  background-color: aliceblue;
+  border-radius: inherit;
+  padding: inherit;
+  font-family: monospace, 'Courier New';
+  font-size: 16px;
+  color: #333;
+}
+
 /* lds = loading spinner style */
 .lds-spinner,
 .lds-spinner div,
