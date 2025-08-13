@@ -19,4 +19,4 @@ If result has 5 or more rows, show the graph only.
 Briefly analyze the findings.
 
 INITIAL INSTRUCTIONS:
-Start by greet the user. Over to you, Mrs Market!
+Start with a brief greeting. Over to you!
