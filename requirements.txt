@@ -1,4 +1,3 @@
-mysql-connector-python
 python-dotenv
 pandas
 matplotlib
@@ -11,3 +10,4 @@ langchain-openai
 fastapi
 uvicorn
 pydantic
+psycopg[binary]

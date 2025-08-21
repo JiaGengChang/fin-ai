@@ -5,6 +5,12 @@ A lightweight chat interface powered by an AI backend for answering finance-rela
 
 Automatically displays AI-generated responses and renders graphs when provided.
 
+US Mirror:
+https://mrsmarket1.livingit.sg
+
+Asia mirror:
+https://mrsmarket.livingit.sg
+
 ## 🎬 Demo
 
 https://github.com/user-attachments/assets/83acdbbd-55e8-448e-9b84-de73c4169820
@@ -32,15 +38,15 @@ Create a `.env` file in the top-level directory. You may use `.env.example` as a
 
 *  OPENAI_MODEL_NAME: *gpt-4o-mini* or better is recommended. Default: `gpt-4o-mini`
 
-*  MYSQL_USER: of the MySQL server user. Default: `root`
+*  DB_USER: of the PostgreSQL DB server user.
 
-*  MYSQL_PASSWORD: of the MySQL server user. Default: `password`
+*  DB_PASSWORD: of the PostgreSQL DB server user.
 
-*  MYSQL_HOST: hostname of MySQL server. Default: `localhost`
+*  DB_HOST: hostname of PostgreSQL DB server.
 
-*  MYSQL_PORT: port on which mySQL is running. Default: `3306`.
+*  Port is fixed at 5432, and database name is fixed as `financial_db`
 
-Start the MySQL server, then populate the database with: 
+Start the PostgreSQL DB server, then populate the database with: 
 ```bash
 cd src
 python data/init_db.py

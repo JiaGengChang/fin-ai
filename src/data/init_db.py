@@ -3,7 +3,7 @@ from dotenv import load_dotenv
 assert load_dotenv('.env') or load_dotenv('../.env')
 import time
 import pandas as pd
-import mysql.connector
+import psycopg
 from metadata import column_mapping
 
 # script to create and populate MySQL database of company financial data
@@ -11,14 +11,6 @@ from metadata import column_mapping
 # db description resides in src/agent.py
 
 start_time = time.time()
-
-db_config = {
-    'host': os.getenv('MYSQL_HOST', 'localhost'),
-    'user': os.getenv('MYSQL_USER', 'root'),
-    'port': int(os.getenv('MYSQL_PORT', 3306)),
-    'password': os.getenv('MYSQL_PASSWORD'),
-    'database': 'financial_db'
-}
 
 # Read CSV file that exists in same directory as this script
 df = pd.read_csv(f'{os.path.dirname(__file__)}/20_year_data.csv')
@@ -31,7 +23,14 @@ df = df.sort_values('year').drop_duplicates(subset=['company_id', 'year'], keep=
 df = df[[col for col in df.columns if col in column_mapping.values()]]
 
 # Connect to DB
-conn = mysql.connector.connect(**db_config)
+conn = psycopg.connect(
+    host=os.getenv('DB_HOST'),
+    user=os.getenv('DB_USER'),
+    port=5432,
+    password=os.getenv('DB_PASSWORD'),
+    dbname=os.getenv('DB_NAME'),
+    options=f"-c search_path=fin_ai" # schema
+)
 cursor = conn.cursor()
 
 columns = df.columns.tolist()
@@ -42,19 +41,20 @@ with open(os.path.join(os.path.dirname(__file__),'init_company_table.sql'), 'r')
 cursor.execute(create_table_query)
 
 # Insert base financial data
-counter=0
-for _,row in df.iterrows():
-    counter += 1
-    print(f'{counter} of {len(df)}')
-    values = [row[col] if pd.notna(row[col]) else None for col in columns]
+# Bulk insert using executemany for efficiency
+values_list = [
+    [row[col] if pd.notna(row[col]) else None for col in columns]
+    for _, row in df.iterrows()
+]
 
-    insert_query = f'''
-        INSERT INTO company_data ({', '.join(columns)})
-        VALUES ({', '.join(['%s'] * len(columns))})
-        ON DUPLICATE KEY UPDATE
-        {', '.join(f"{col} = VALUES({col})" for col in columns if col not in ['company_id', 'year'])}
-    '''
-    cursor.execute(insert_query, values)
+insert_query = f'''
+    INSERT INTO fin_ai.company_data ({', '.join(columns)})
+    VALUES ({', '.join(['%s'] * len(columns))})
+    ON CONFLICT (company_id, year) DO UPDATE SET
+    {', '.join(f"{col} = EXCLUDED.{col}" for col in columns if col not in ['company_id', 'year'])}
+'''
+
+cursor.executemany(insert_query, values_list)
 
 conn.commit()
 print(f'{len(df)} rows inserted successfully')
@@ -62,9 +62,9 @@ print(f'{len(df)} rows inserted successfully')
 # Create derived financial columns
 with open(os.path.join(os.path.dirname(__file__), 'calculate_financial_data.sql'), 'r') as f:
     create_procedure_query = f.read()
-cursor.execute('DROP PROCEDURE IF EXISTS calculate_financial_data')
+cursor.execute('DROP FUNCTION IF EXISTS calculate_financial_data')
 cursor.execute(create_procedure_query)
-cursor.callproc('calculate_financial_data')
+cursor.execute('SELECT calculate_financial_data()')
 conn.commit()
 print(f'Derived financial metrics updated successfully')
 
